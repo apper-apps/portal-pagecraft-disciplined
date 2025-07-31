@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
+import TextArea from "@/components/atoms/TextArea";
 import Select from "@/components/atoms/Select";
 import Badge from "@/components/atoms/Badge";
 import ApperIcon from "@/components/ApperIcon";
 
 const SettingsPage = () => {
-  const [settings, setSettings] = useState({
+const [settings, setSettings] = useState({
     shopifyStore: "",
     apiKey: "",
     aiModel: "gpt-4",
@@ -15,7 +16,11 @@ const SettingsPage = () => {
     maxWords: 150,
     includeKeywords: true,
     autoSave: false,
-    notifications: true
+    notifications: true,
+    brandVoiceStrength: 70,
+    sampleContent: "",
+    brandGuidelines: "",
+    uploadedFiles: []
   });
 
   const [isConnected, setIsConnected] = useState(false);
@@ -36,10 +41,14 @@ const SettingsPage = () => {
 
   const loadSettings = async () => {
     // Simulate loading settings from localStorage or API
-    const savedSettings = localStorage.getItem("pagecraft-settings");
+const savedSettings = localStorage.getItem("pagecraft-settings");
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
-      setSettings(parsed);
+      setSettings({
+        ...settings,
+        ...parsed,
+        uploadedFiles: parsed.uploadedFiles || []
+      });
       setIsConnected(parsed.shopifyStore && parsed.apiKey);
       setConnectionStatus(parsed.shopifyStore && parsed.apiKey ? "connected" : "disconnected");
     }
@@ -58,7 +67,53 @@ const SettingsPage = () => {
       [field]: !prev[field]
     }));
   };
+const handleFileUpload = async (event) => {
+    const files = Array.from(event.target.files);
+    const textFiles = files.filter(file => 
+      file.type === 'text/plain' || 
+      file.type === 'text/csv' || 
+      file.name.endsWith('.txt') || 
+      file.name.endsWith('.csv')
+    );
 
+    if (textFiles.length === 0) {
+      toast.error("Please upload text files (.txt, .csv) only");
+      return;
+    }
+
+    try {
+      const fileContents = await Promise.all(
+        textFiles.map(async (file) => {
+          const content = await file.text();
+          return {
+            name: file.name,
+            size: file.size,
+            content: content.substring(0, 5000), // Limit content length
+            uploadDate: new Date().toISOString()
+          };
+        })
+      );
+
+      setSettings(prev => ({
+        ...prev,
+        uploadedFiles: [...prev.uploadedFiles, ...fileContents]
+      }));
+
+      toast.success(`${textFiles.length} file(s) uploaded successfully for brand voice training`);
+    } catch (error) {
+      toast.error("Failed to upload files. Please try again.");
+    }
+  };
+
+  const handleClearTrainingData = () => {
+    setSettings(prev => ({
+      ...prev,
+      sampleContent: "",
+      brandGuidelines: "",
+      uploadedFiles: []
+    }));
+    toast.success("All brand voice training data cleared");
+  };
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
@@ -174,7 +229,7 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          {/* AI Configuration */}
+{/* AI Configuration */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
@@ -218,6 +273,125 @@ const SettingsPage = () => {
                   <span>300 words</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Brand Voice */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center">
+                <ApperIcon name="MessageSquare" className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Brand Voice</h3>
+                <p className="text-sm text-gray-600">Train AI to match your brand's unique style and tone</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* File Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Upload Sample Content
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-400 transition-colors">
+                  <div className="text-center">
+                    <ApperIcon name="Upload" className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <div className="text-sm text-gray-600 mb-2">
+                      Upload existing product descriptions or marketing content
+                    </div>
+                    <input
+                      type="file"
+                      multiple
+                      accept=".txt,.csv"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="brand-voice-upload"
+                    />
+                    <label htmlFor="brand-voice-upload">
+                      <Button variant="outline" size="sm" as="span" leftIcon="Upload">
+                        Choose Files
+                      </Button>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Supports .txt and .csv files up to 5MB each
+                    </p>
+                  </div>
+                </div>
+
+                {/* Uploaded Files */}
+                {settings.uploadedFiles.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <div className="text-sm font-medium text-gray-700">
+                      Uploaded Files ({settings.uploadedFiles.length})
+                    </div>
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {settings.uploadedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
+                          <div className="flex items-center space-x-2">
+                            <ApperIcon name="File" className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-900">{file.name}</span>
+                            <span className="text-gray-500">({Math.round(file.size / 1024)}KB)</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Brand Guidelines */}
+              <div>
+                <TextArea
+                  label="Brand Guidelines (Optional)"
+                  value={settings.brandGuidelines}
+                  onChange={(e) => handleInputChange("brandGuidelines", e.target.value)}
+                  placeholder="Describe your brand voice, tone, key phrases, writing style, or specific requirements. For example: 'Use casual, friendly language. Avoid technical jargon. Include sustainability messaging. Use emojis sparingly.'"
+                  rows={4}
+                  className="resize-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Provide specific instructions to help AI understand your brand's personality and communication style
+                </p>
+              </div>
+
+              {/* Brand Voice Strength */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Brand Voice Strength: {settings.brandVoiceStrength}%
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={settings.brandVoiceStrength}
+                  onChange={(e) => handleInputChange("brandVoiceStrength", parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Generic (0%)</span>
+                  <span>Balanced (50%)</span>
+                  <span>Strong Brand Match (100%)</span>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  Higher values make AI follow your brand voice more closely. Lower values allow for more creative variation.
+                </p>
+              </div>
+
+              {/* Clear Training Data */}
+              {(settings.uploadedFiles.length > 0 || settings.brandGuidelines) && (
+                <div className="pt-4 border-t border-gray-200">
+                  <Button
+                    onClick={handleClearTrainingData}
+                    variant="ghost"
+                    size="sm"
+                    leftIcon="Trash2"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    Clear All Training Data
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
