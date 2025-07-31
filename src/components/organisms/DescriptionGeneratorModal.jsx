@@ -21,11 +21,16 @@ const [formData, setFormData] = useState({
     features: "",
     tone: "Professional"
   });
-  const [generatedVersions, setGeneratedVersions] = useState([]);
+const [generatedVersions, setGeneratedVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [analysis, setAnalysis] = useState(null);
+  const [seoData, setSeoData] = useState({
+    metaTitle: "",
+    metaDescription: "",
+    suggestedKeywords: ""
+  });
   const toneOptions = [
     { value: "Professional", label: "Professional - Technical and feature-focused" },
     { value: "Casual", label: "Casual - Friendly and conversational" },
@@ -39,15 +44,25 @@ useEffect(() => {
         features: "",
         tone: "Professional"
       });
-      setGeneratedVersions([]);
+setGeneratedVersions([]);
       setSelectedVersion(0);
       setAnalysis(null);
+      setSeoData({
+        metaTitle: "",
+        metaDescription: "",
+        suggestedKeywords: ""
+      });
     }
   }, [product, isOpen]);
 
 useEffect(() => {
     if (generatedVersions.length > 0 && generatedVersions[selectedVersion]) {
       analyzeDescription();
+      // Update SEO data when version changes
+      const currentVersion = generatedVersions[selectedVersion];
+      if (currentVersion.seo) {
+        setSeoData(currentVersion.seo);
+      }
     }
   }, [generatedVersions, selectedVersion]);
 
@@ -88,8 +103,14 @@ const handleGenerate = async () => {
         variations: 3
       });
       
-      setGeneratedVersions(result.variations || [result]);
+setGeneratedVersions(result.variations || [result]);
       setSelectedVersion(0);
+      // Set initial SEO data from first version
+      if (result.variations && result.variations[0]?.seo) {
+        setSeoData(result.variations[0].seo);
+      } else if (result.seo) {
+        setSeoData(result.seo);
+      }
       toast.success("3 description versions generated successfully!");
     } catch (error) {
       toast.error("Failed to generate descriptions. Please try again.");
@@ -111,8 +132,14 @@ const handleRegenerateVersion = async () => {
         variations: 3
       });
       
-      setGeneratedVersions(result.variations || [result]);
+setGeneratedVersions(result.variations || [result]);
       setSelectedVersion(0);
+      // Update SEO data with new first version
+      if (result.variations && result.variations[0]?.seo) {
+        setSeoData(result.variations[0].seo);
+      } else if (result.seo) {
+        setSeoData(result.seo);
+      }
       toast.success("New versions generated!");
     } catch (error) {
       toast.error("Failed to generate new versions. Please try again.");
@@ -152,8 +179,34 @@ const handleDescriptionChange = (value) => {
       };
       setGeneratedVersions(updatedVersions);
     }
+};
+
+  const handleSEOChange = (field, value) => {
+    setSeoData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Update the current version's SEO data
+    if (generatedVersions[selectedVersion]) {
+      const updatedVersions = [...generatedVersions];
+      updatedVersions[selectedVersion] = {
+        ...updatedVersions[selectedVersion],
+        seo: {
+          ...updatedVersions[selectedVersion].seo,
+          [field]: value
+        }
+      };
+      setGeneratedVersions(updatedVersions);
+    }
   };
 
+  const getCharacterCountColor = (current, optimal) => {
+    const percentage = current / optimal;
+    if (percentage >= 0.8 && percentage <= 1.2) return "text-green-600";
+    if (percentage >= 0.6 && percentage <= 1.4) return "text-yellow-600";
+    return "text-red-600";
+  };
   if (!isOpen) return null;
 
   return (
@@ -304,6 +357,84 @@ const handleDescriptionChange = (value) => {
                                 </ul>
                               </div>
                             )}
+                          </div>
+)}
+                        
+                        {/* SEO Section */}
+                        {generatedVersions.length > 0 && (
+                          <div className="border-t border-gray-200 pt-6 mt-6">
+                            <h4 className="font-medium text-gray-900 mb-4 flex items-center">
+                              <ApperIcon name="Search" className="w-4 h-4 mr-2" />
+                              SEO Optimization
+                            </h4>
+                            
+                            <div className="space-y-4">
+                              {/* Meta Title */}
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Meta Title
+                                  <span className={`ml-2 text-xs ${getCharacterCountColor(seoData.metaTitle.length, 55)}`}>
+                                    {seoData.metaTitle.length}/60 characters (optimal: 50-60)
+                                  </span>
+                                </label>
+                                <Input
+                                  value={seoData.metaTitle}
+                                  onChange={(e) => handleSEOChange('metaTitle', e.target.value)}
+                                  placeholder="Enter meta title for search engines..."
+                                  className="text-sm"
+                                  maxLength={60}
+                                />
+                              </div>
+                              
+                              {/* Meta Description */}
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Meta Description
+                                  <span className={`ml-2 text-xs ${getCharacterCountColor(seoData.metaDescription.length, 155)}`}>
+                                    {seoData.metaDescription.length}/160 characters (optimal: 150-160)
+                                  </span>
+                                </label>
+                                <TextArea
+                                  value={seoData.metaDescription}
+                                  onChange={(e) => handleSEOChange('metaDescription', e.target.value)}
+                                  placeholder="Enter meta description for search engine results..."
+                                  rows={3}
+                                  className="text-sm resize-none"
+                                  maxLength={160}
+                                />
+                              </div>
+                              
+                              {/* Suggested Keywords */}
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Suggested Keywords
+                                  <span className="ml-2 text-xs text-gray-500">
+                                    Comma-separated list
+                                  </span>
+                                </label>
+                                <Input
+                                  value={seoData.suggestedKeywords}
+                                  onChange={(e) => handleSEOChange('suggestedKeywords', e.target.value)}
+                                  placeholder="keyword1, keyword2, keyword3..."
+                                  className="text-sm"
+                                />
+                              </div>
+                              
+                              {/* SEO Tips */}
+                              <div className="bg-blue-50 rounded-lg p-3">
+                                <div className="flex items-start">
+                                  <ApperIcon name="Info" className="w-4 h-4 text-blue-500 mt-0.5 mr-2" />
+                                  <div className="text-xs text-blue-700">
+                                    <div className="font-medium mb-1">SEO Tips:</div>
+                                    <ul className="space-y-1">
+                                      <li>• Meta titles should be unique and descriptive</li>
+                                      <li>• Meta descriptions should entice clicks from search results</li>
+                                      <li>• Use relevant keywords naturally in both title and description</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>

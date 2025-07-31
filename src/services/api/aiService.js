@@ -1,4 +1,6 @@
 import generatedDescriptionsData from "@/services/mockData/generatedDescriptions.json";
+import React from "react";
+import Error from "@/components/ui/Error";
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -81,6 +83,10 @@ async generateDescription({ productName, features, tone, templateId = null, vari
           }
 
           // Create description record for each variation
+// Generate SEO metadata for this variation
+          const seoMetadata = await this.generateSEOMetadata(productName, featuresList, tone, generatedContent);
+          
+          // Create description record for each variation
           const maxId = Math.max(...this.generatedDescriptions.map(d => d.Id), 0);
           const newDescription = {
             Id: maxId + 1 + i,
@@ -90,12 +96,12 @@ async generateDescription({ productName, features, tone, templateId = null, vari
             features: featuresList,
             wordCount: generatedContent.split(" ").length,
             createdAt: new Date().toISOString(),
-            variation: i + 1
+            variation: i + 1,
+            seo: seoMetadata
           };
 
           this.generatedDescriptions.push(newDescription);
           generatedVariations.push(newDescription);
-        }
         
         return {
           variations: generatedVariations,
@@ -131,6 +137,10 @@ async generateDescription({ productName, features, tone, templateId = null, vari
       }
 
       // Create new generated description record
+// Generate SEO metadata
+      const seoMetadata = await this.generateSEOMetadata(productName, featuresList, tone, generatedContent);
+      
+      // Create new generated description record
       const maxId = Math.max(...this.generatedDescriptions.map(d => d.Id), 0);
       const newDescription = {
         Id: maxId + 1,
@@ -138,8 +148,9 @@ async generateDescription({ productName, features, tone, templateId = null, vari
         content: generatedContent,
         tone: tone,
         features: featuresList,
-        wordCount: generatedContent.split(" ").length,
-        createdAt: new Date().toISOString()
+wordCount: generatedContent.split(" ").length,
+        createdAt: new Date().toISOString(),
+        seo: seoMetadata
       };
 
       this.generatedDescriptions.push(newDescription);
@@ -201,6 +212,68 @@ async generateDescription({ productName, features, tone, templateId = null, vari
         wordCount > 150 ? "Consider shortening for better readability" : null,
         sentences < 3 ? "Add more sentences for better flow" : null
       ].filter(Boolean)
+    };
+}
+
+  async generateSEOMetadata(productName, features, tone, description) {
+    await delay(200);
+    
+    const featuresList = Array.isArray(features) ? features : features.split(",").map(f => f.trim());
+    
+    // Generate meta title (50-60 characters optimal)
+    let metaTitle = "";
+    switch (tone) {
+      case "Professional":
+        metaTitle = `${productName} - Professional ${featuresList[0] || 'Solution'}`;
+        break;
+      case "Casual":
+        metaTitle = `${productName} - Perfect for ${featuresList[0] || 'Everyday Use'}`;
+        break;
+      case "Luxury":
+        metaTitle = `${productName} - Premium ${featuresList[0] || 'Excellence'}`;
+        break;
+      default:
+        metaTitle = `${productName} - Quality ${featuresList[0] || 'Product'}`;
+    }
+    
+    // Truncate if too long
+    if (metaTitle.length > 60) {
+      metaTitle = metaTitle.substring(0, 57) + "...";
+    }
+    
+    // Generate meta description (150-160 characters optimal)
+    const firstSentence = description.split(/[.!?]/)[0];
+    let metaDescription = firstSentence;
+    
+    if (metaDescription.length > 160) {
+      metaDescription = metaDescription.substring(0, 157) + "...";
+    } else if (metaDescription.length < 120) {
+      // Add more context if too short
+      const additionalInfo = ` Features ${featuresList.slice(0, 2).join(", ")}.`;
+      if ((metaDescription + additionalInfo).length <= 160) {
+        metaDescription += additionalInfo;
+      }
+    }
+    
+    // Generate suggested keywords
+    const baseKeywords = [productName.toLowerCase()];
+    const featureKeywords = featuresList.map(f => f.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim());
+    const toneKeywords = {
+      "Professional": ["professional", "business", "commercial"],
+      "Casual": ["everyday", "home", "personal"],
+      "Luxury": ["premium", "luxury", "high-end"]
+    };
+    
+    const suggestedKeywords = [
+      ...baseKeywords,
+      ...featureKeywords.slice(0, 3),
+      ...(toneKeywords[tone] || ["quality", "reliable"]).slice(0, 2)
+    ].filter(Boolean).join(", ");
+    
+    return {
+      metaTitle,
+      metaDescription,
+      suggestedKeywords
     };
   }
 
