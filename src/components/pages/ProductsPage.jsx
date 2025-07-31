@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import SearchBar from "@/components/molecules/SearchBar";
+import productService from "@/services/api/productService";
+import ApperIcon from "@/components/ApperIcon";
 import FilterBar from "@/components/molecules/FilterBar";
+import SearchBar from "@/components/molecules/SearchBar";
 import ProductGrid from "@/components/organisms/ProductGrid";
 import DescriptionGeneratorModal from "@/components/organisms/DescriptionGeneratorModal";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Button from "@/components/atoms/Button";
-import Icon from "@/components/atoms/Icon";
-import productService from "@/services/api/productService";
-
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -157,7 +156,7 @@ const ProductsPage = () => {
               <p className="text-2xl font-bold gradient-text">{products.length}</p>
             </div>
 <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
-              <Icon name="Package" className="w-6 h-6 text-purple-600" />
+              <ApperIcon name="Package" className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
@@ -171,7 +170,7 @@ const ProductsPage = () => {
               </p>
             </div>
 <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center">
-              <Icon name="CheckCircle" className="w-6 h-6 text-green-600" />
+              <ApperIcon name="CheckCircle" className="w-6 h-6 text-green-600" />
             </div>
           </div>
         </div>
@@ -183,7 +182,7 @@ const ProductsPage = () => {
               <p className="text-2xl font-bold text-blue-600">{categories.length - 1}</p>
             </div>
 <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
-              <Icon name="Tag" className="w-6 h-6 text-blue-600" />
+              <ApperIcon name="Tag" className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
@@ -195,7 +194,7 @@ const ProductsPage = () => {
               <p className="text-2xl font-bold text-purple-600">{filteredProducts.length}</p>
             </div>
 <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
-              <Icon name="Filter" className="w-6 h-6 text-purple-600" />
+              <ApperIcon name="Filter" className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
