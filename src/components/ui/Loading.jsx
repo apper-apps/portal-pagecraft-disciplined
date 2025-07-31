@@ -1,27 +1,35 @@
+import React from "react";
 import ApperIcon from "@/components/ApperIcon";
 
-const ProgressBar = ({ current, total, message }) => {
+const ProgressBar = ({ current = 0, total = 100, message = "Loading..." }) => {
   const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
   
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-600">{message}</span>
-        <span className="font-medium text-gray-900">{current}/{total}</span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      <div className="text-center">
-        <span className="text-lg font-semibold text-purple-600">{percentage}%</span>
+    <div className="flex flex-col items-center justify-center p-8 space-y-6">
+      <ApperIcon className="w-16 h-16 text-primary-600 animate-pulse-subtle" />
+      
+      <div className="w-full max-w-md space-y-3">
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-gray-600">{message}</span>
+          <span className="text-primary-600 font-medium">{percentage}%</span>
+        </div>
+        
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        
+        <div className="text-xs text-gray-500 text-center">
+          {current} of {total} completed
+        </div>
       </div>
     </div>
   );
 };
-const Loading = ({ type = "default", message = "Loading..." }) => {
+
+const Loading = ({ type = "default", message = "Loading...", current, total }) => {
   if (type === "skeleton") {
     return (
       <div className="space-y-6 p-6">
@@ -84,7 +92,8 @@ const Loading = ({ type = "default", message = "Loading..." }) => {
       </div>
     );
   }
-if (type === "progress") {
+
+  if (type === "progress") {
     return (
       <div className="p-6">
         <ProgressBar current={current || 0} total={total || 100} message={message} />
@@ -93,11 +102,9 @@ if (type === "progress") {
   }
 
   return (
-    <div className="flex items-center justify-center p-8">
-      <div className="flex items-center space-x-3">
-        <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-gray-600 font-medium">{message}</span>
-      </div>
+    <div className="flex flex-col items-center justify-center p-8 space-y-4">
+      <ApperIcon className="w-12 h-12 text-primary-600 animate-spin" />
+      <p className="text-gray-600 text-sm animate-pulse">{message}</p>
     </div>
   );
 };
