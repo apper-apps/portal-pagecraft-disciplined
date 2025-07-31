@@ -1,6 +1,6 @@
 import ProductCard from "@/components/molecules/ProductCard";
 import React from "react";
-import ApperIcon from "@/components/atoms/ApperIcon";
+import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 const ProductGrid = ({ products, onGenerateDescription, viewMode = "grid" }) => {
   if (viewMode === "list") {
