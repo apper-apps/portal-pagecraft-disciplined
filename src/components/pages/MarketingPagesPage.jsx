@@ -27,9 +27,9 @@ const MarketingPagesPage = () => {
     description: ''
   });
 
-  // Generated content state
+// Generated content state
   const [generatedContent, setGeneratedContent] = useState(null);
-
+  const [activeContentTab, setActiveContentTab] = useState('landing');
   useEffect(() => {
     loadCampaigns();
   }, []);
@@ -271,87 +271,243 @@ const MarketingPagesPage = () => {
                       <ApperIcon name="Loader2" className="animate-spin" size={18} />
                       <span>Generating Content...</span>
                     </>
-                  ) : (
+) : (
                     <>
                       <ApperIcon name="Sparkles" size={18} />
-                      <span>{editingCampaign ? 'Update Campaign' : 'Generate Landing Page'}</span>
+                      <span>{editingCampaign ? 'Update Campaign' : 'Generate Marketing Content'}</span>
                     </>
                   )}
                 </Button>
               </div>
 
               {/* Right Column - Generated Content */}
-              <div className="space-y-6">
+<div className="space-y-6">
                 {generatedContent ? (
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Generated Content</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Generated Marketing Content</h3>
                     
-                    {/* Headlines */}
-                    <div className="mb-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-800">Headlines</h4>
-                        <Button
-                          onClick={() => copyToClipboard(generatedContent.headlines.join('\n'))}
-                          variant="ghost"
-                          size="sm"
-                          className="text-primary-600 hover:text-primary-700"
+                    {/* Content Type Tabs */}
+                    <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200">
+                      {[
+                        { id: 'landing', label: 'Landing Page', icon: 'Globe' },
+                        { id: 'email', label: 'Email', icon: 'Mail' },
+                        { id: 'instagram', label: 'Instagram', icon: 'Instagram' },
+                        { id: 'facebook', label: 'Facebook', icon: 'Facebook' },
+                        { id: 'twitter', label: 'Twitter', icon: 'Twitter' }
+                      ].map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveContentTab(tab.id)}
+                          className={`flex items-center space-x-2 px-4 py-2 rounded-t-lg font-medium text-sm transition-colors ${
+                            activeContentTab === tab.id
+                              ? 'bg-white text-primary-600 border-b-2 border-primary-600'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
                         >
-                          <ApperIcon name="Copy" size={16} />
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {generatedContent.headlines.map((headline, index) => (
-                          <div key={index} className="bg-white p-3 rounded border text-gray-700">
-                            {headline}
+                          <ApperIcon name={tab.icon} size={16} />
+                          <span>{tab.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Landing Page Content */}
+                    {activeContentTab === 'landing' && (
+                      <div className="space-y-6">
+                        {/* Headlines */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-gray-800">Headlines</h4>
+                            <Button
+                              onClick={() => copyToClipboard(generatedContent.landing.headlines.join('\n'))}
+                              variant="ghost"
+                              size="sm"
+                              className="text-primary-600 hover:text-primary-700"
+                            >
+                              <ApperIcon name="Copy" size={16} />
+                            </Button>
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                          <div className="space-y-2">
+                            {generatedContent.landing.headlines.map((headline, index) => (
+                              <div key={index} className="bg-white p-3 rounded border text-gray-700">
+                                {headline}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
 
-                    {/* Body Text */}
-                    <div className="mb-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-800">Body Text</h4>
-                        <Button
-                          onClick={() => copyToClipboard(generatedContent.bodyText)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-primary-600 hover:text-primary-700"
-                        >
-                          <ApperIcon name="Copy" size={16} />
-                        </Button>
-                      </div>
-                      <div className="bg-white p-3 rounded border text-gray-700">
-                        {generatedContent.bodyText}
-                      </div>
-                    </div>
+                        {/* Body Text */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-gray-800">Body Text</h4>
+                            <Button
+                              onClick={() => copyToClipboard(generatedContent.landing.bodyText)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-primary-600 hover:text-primary-700"
+                            >
+                              <ApperIcon name="Copy" size={16} />
+                            </Button>
+                          </div>
+                          <div className="bg-white p-3 rounded border text-gray-700">
+                            {generatedContent.landing.bodyText}
+                          </div>
+                        </div>
 
-                    {/* Call-to-Action Buttons */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-800">Call-to-Action Buttons</h4>
-                        <Button
-                          onClick={() => copyToClipboard(generatedContent.ctaButtons.join('\n'))}
-                          variant="ghost"
-                          size="sm"
-                          className="text-primary-600 hover:text-primary-700"
-                        >
-                          <ApperIcon name="Copy" size={16} />
-                        </Button>
+                        {/* Call-to-Action Buttons */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-gray-800">Call-to-Action Buttons</h4>
+                            <Button
+                              onClick={() => copyToClipboard(generatedContent.landing.ctaButtons.join('\n'))}
+                              variant="ghost"
+                              size="sm"
+                              className="text-primary-600 hover:text-primary-700"
+                            >
+                              <ApperIcon name="Copy" size={16} />
+                            </Button>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {generatedContent.landing.ctaButtons.map((cta, index) => (
+                              <span key={index} className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm">
+                                {cta}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {generatedContent.ctaButtons.map((cta, index) => (
-                          <span key={index} className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm">
-                            {cta}
-                          </span>
-                        ))}
+                    )}
+
+                    {/* Email Content */}
+                    {activeContentTab === 'email' && (
+                      <div className="space-y-6">
+                        {/* Subject Lines */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-gray-800">Subject Lines</h4>
+                            <Button
+                              onClick={() => copyToClipboard(generatedContent.email.subjectLines.join('\n'))}
+                              variant="ghost"
+                              size="sm"
+                              className="text-primary-600 hover:text-primary-700"
+                            >
+                              <ApperIcon name="Copy" size={16} />
+                            </Button>
+                          </div>
+                          <div className="space-y-2">
+                            {generatedContent.email.subjectLines.map((subject, index) => (
+                              <div key={index} className="bg-white p-3 rounded border text-gray-700">
+                                {subject}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Email Body */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-gray-800">Email Body</h4>
+                            <Button
+                              onClick={() => copyToClipboard(generatedContent.email.bodyText)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-primary-600 hover:text-primary-700"
+                            >
+                              <ApperIcon name="Copy" size={16} />
+                            </Button>
+                          </div>
+                          <div className="bg-white p-4 rounded border text-gray-700 whitespace-pre-line">
+                            {generatedContent.email.bodyText}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Instagram Content */}
+                    {activeContentTab === 'instagram' && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-gray-800">Instagram Captions</h4>
+                          <Button
+                            onClick={() => copyToClipboard(generatedContent.instagram.captions.join('\n\n---\n\n'))}
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary-600 hover:text-primary-700"
+                          >
+                            <ApperIcon name="Copy" size={16} />
+                          </Button>
+                        </div>
+                        <div className="space-y-4">
+                          {generatedContent.instagram.captions.map((caption, index) => (
+                            <div key={index} className="bg-white p-4 rounded border">
+                              <div className="text-gray-700 whitespace-pre-line mb-2">{caption}</div>
+                              <div className="text-xs text-gray-500">
+                                Character count: {caption.length}/2200
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Facebook Content */}
+                    {activeContentTab === 'facebook' && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-gray-800">Facebook Ad Copy</h4>
+                          <Button
+                            onClick={() => copyToClipboard(generatedContent.facebook.adCopy.join('\n\n---\n\n'))}
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary-600 hover:text-primary-700"
+                          >
+                            <ApperIcon name="Copy" size={16} />
+                          </Button>
+                        </div>
+                        <div className="space-y-4">
+                          {generatedContent.facebook.adCopy.map((copy, index) => (
+                            <div key={index} className="bg-white p-4 rounded border">
+                              <div className="text-gray-700 whitespace-pre-line mb-2">{copy}</div>
+                              <div className="text-xs text-gray-500">
+                                Character count: {copy.length}/1250
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Twitter Content */}
+                    {activeContentTab === 'twitter' && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-gray-800">Twitter Posts</h4>
+                          <Button
+                            onClick={() => copyToClipboard(generatedContent.twitter.posts.join('\n\n'))}
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary-600 hover:text-primary-700"
+                          >
+                            <ApperIcon name="Copy" size={16} />
+                          </Button>
+                        </div>
+                        <div className="space-y-3">
+                          {generatedContent.twitter.posts.map((post, index) => (
+                            <div key={index} className="bg-white p-3 rounded border">
+                              <div className="text-gray-700 mb-1">{post}</div>
+                              <div className="text-xs text-gray-500">
+                                Character count: {post.length}/280
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="bg-gray-50 rounded-lg p-12 text-center">
                     <ApperIcon name="FileText" className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-500">Generated content will appear here</p>
+                    <p className="text-gray-500 mb-2">Generated content will appear here</p>
+                    <p className="text-gray-400 text-sm">Landing pages, emails, and social media content</p>
                   </div>
                 )}
               </div>
@@ -438,9 +594,9 @@ const MarketingPagesPage = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">Generated Content</span>
                       <ApperIcon name="Eye" className="h-4 w-4 text-gray-400" />
-                    </div>
+</div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {campaign.generatedContent.headlines.length} headlines, {campaign.generatedContent.ctaButtons.length} CTAs
+                      Landing page, email, and social media content
                     </p>
                   </div>
                 )}
