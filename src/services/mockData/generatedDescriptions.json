@@ -1,0 +1,29 @@
+[
+  {
+    "Id": 1,
+    "productId": "1",
+    "content": "Experience unparalleled audio quality with these Premium Wireless Headphones. Featuring advanced noise cancellation technology, these headphones deliver crystal-clear sound while blocking out distractions. With 30-hour battery life and comfortable over-ear design, they're perfect for long listening sessions, commutes, or professional use.",
+    "tone": "Professional",
+    "features": ["noise cancellation", "30-hour battery", "wireless connectivity", "premium sound quality"],
+    "wordCount": 65,
+    "createdAt": "2024-01-15T10:30:00Z"
+  },
+  {
+    "Id": 2,
+    "productId": "2",
+    "content": "Soft, breathable, and sustainably made - this Organic Cotton T-Shirt is your new favorite go-to piece. Perfect for everyday wear, it feels amazing against your skin and gets softer with every wash. Available in a range of colors to match your personal style, it's the kind of shirt you'll reach for again and again.",
+    "tone": "Casual",
+    "features": ["organic cotton", "soft texture", "multiple colors", "sustainable"],
+    "wordCount": 58,
+    "createdAt": "2024-01-14T15:45:00Z"
+  },
+  {
+    "Id": 3,
+    "productId": "3",
+    "content": "Elevate your hydration experience with this sophisticated Smart Water Bottle. This exclusive design seamlessly integrates advanced temperature tracking technology with elegant aesthetics. Crafted for the discerning individual who values both functionality and style, it transforms the simple act of staying hydrated into a premium wellness experience.",
+    "tone": "Luxury",
+    "features": ["temperature tracking", "app integration", "smart technology", "premium design"],
+    "wordCount": 71,
+    "createdAt": "2024-01-13T09:20:00Z"
+  }
+]

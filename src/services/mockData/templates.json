@@ -1,0 +1,52 @@
+[
+  {
+    "Id": 1,
+    "name": "Professional Product Template",
+    "tone": "Professional",
+    "structure": "Features-focused with technical specifications and benefits",
+    "keywords": ["premium", "professional", "quality", "reliable", "innovative"],
+    "category": "General",
+    "description": "A comprehensive template for professional product descriptions with emphasis on features and benefits.",
+    "createdAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "Id": 2,
+    "name": "Casual Lifestyle Template",
+    "tone": "Casual",
+    "structure": "Conversational tone with lifestyle benefits and everyday use cases",
+    "keywords": ["everyday", "easy", "perfect for", "love", "enjoy"],
+    "category": "Lifestyle",
+    "description": "Friendly and approachable template perfect for lifestyle and everyday products.",
+    "createdAt": "2024-01-14T14:30:00Z"
+  },
+  {
+    "Id": 3,
+    "name": "Luxury Premium Template",
+    "tone": "Luxury",
+    "structure": "Sophisticated language emphasizing exclusivity and premium experience",
+    "keywords": ["exclusive", "luxury", "premium", "sophisticated", "exceptional"],
+    "category": "Luxury",
+    "description": "Elegant template for high-end products that emphasizes exclusivity and premium quality.",
+    "createdAt": "2024-01-13T16:45:00Z"
+  },
+  {
+    "Id": 4,
+    "name": "Tech Product Template",
+    "tone": "Professional",
+    "structure": "Technical specifications with performance benefits and use cases",
+    "keywords": ["advanced", "technology", "performance", "efficient", "smart"],
+    "category": "Technology",
+    "description": "Specialized template for technology products with focus on specifications and performance.",
+    "createdAt": "2024-01-12T09:15:00Z"
+  },
+  {
+    "Id": 5,
+    "name": "Fashion & Style Template",
+    "tone": "Casual",
+    "structure": "Style-focused with trend awareness and versatility emphasis",
+    "keywords": ["stylish", "trendy", "versatile", "comfortable", "fashionable"],
+    "category": "Fashion",
+    "description": "Fashion-forward template perfect for clothing and style accessories.",
+    "createdAt": "2024-01-11T12:20:00Z"
+  }
+]

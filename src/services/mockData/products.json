@@ -1,0 +1,82 @@
+[
+  {
+    "Id": 1,
+    "name": "Premium Wireless Headphones",
+    "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
+    "currentDescription": "High-quality wireless headphones with noise cancellation.",
+    "lastGenerated": "2024-01-15T10:30:00Z",
+    "price": 199.99,
+    "category": "Electronics",
+    "sku": "WH-001"
+  },
+  {
+    "Id": 2,
+    "name": "Organic Cotton T-Shirt",
+    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    "currentDescription": "Comfortable organic cotton t-shirt in various colors.",
+    "lastGenerated": "2024-01-14T15:45:00Z",
+    "price": 29.99,
+    "category": "Clothing",
+    "sku": "TS-002"
+  },
+  {
+    "Id": 3,
+    "name": "Smart Water Bottle",
+    "image": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=400&fit=crop",
+    "currentDescription": "Temperature tracking smart water bottle with app integration.",
+    "lastGenerated": "2024-01-13T09:20:00Z",
+    "price": 79.99,
+    "category": "Fitness",
+    "sku": "WB-003"
+  },
+  {
+    "Id": 4,
+    "name": "Artisan Coffee Blend",
+    "image": "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=400&fit=crop",
+    "currentDescription": "Premium artisan coffee blend with rich flavor notes.",
+    "lastGenerated": "2024-01-12T14:10:00Z",
+    "price": 24.99,
+    "category": "Food & Beverage",
+    "sku": "CF-004"
+  },
+  {
+    "Id": 5,
+    "name": "Minimalist Desk Lamp",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    "currentDescription": "Modern minimalist desk lamp with adjustable brightness.",
+    "lastGenerated": "2024-01-11T11:55:00Z",
+    "price": 89.99,
+    "category": "Home & Office",
+    "sku": "DL-005"
+  },
+  {
+    "Id": 6,
+    "name": "Yoga Mat Premium",
+    "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop",
+    "currentDescription": "Non-slip premium yoga mat for all types of practice.",
+    "lastGenerated": "2024-01-10T16:30:00Z",
+    "price": 59.99,
+    "category": "Fitness",
+    "sku": "YM-006"
+  },
+  {
+    "Id": 7,
+    "name": "Wireless Charging Pad",
+    "image": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=400&h=400&fit=crop",
+    "currentDescription": "Fast wireless charging pad compatible with all devices.",
+    "lastGenerated": "2024-01-09T13:25:00Z",
+    "price": 49.99,
+    "category": "Electronics",
+    "sku": "CP-007"
+  },
+  {
+    "Id": 8,
+    "name": "Handcrafted Leather Wallet",
+    "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&h=400&fit=crop",
+    "currentDescription": "Premium handcrafted leather wallet with RFID protection.",
+    "lastGenerated": "2024-01-08T08:40:00Z",
+    "price": 79.99,
+    "category": "Accessories",
+    "sku": "LW-008"
+  }
+]
