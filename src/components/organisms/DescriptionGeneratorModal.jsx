@@ -16,43 +16,45 @@ const DescriptionGeneratorModal = ({
   onClose, 
   onSave 
 }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     productName: "",
     features: "",
     tone: "Professional"
   });
-  const [generatedDescription, setGeneratedDescription] = useState("");
+  const [generatedVersions, setGeneratedVersions] = useState([]);
+  const [selectedVersion, setSelectedVersion] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [analysis, setAnalysis] = useState(null);
-
   const toneOptions = [
     { value: "Professional", label: "Professional - Technical and feature-focused" },
     { value: "Casual", label: "Casual - Friendly and conversational" },
     { value: "Luxury", label: "Luxury - Sophisticated and premium" }
   ];
 
-  useEffect(() => {
+useEffect(() => {
     if (product && isOpen) {
       setFormData({
         productName: product.name || "",
         features: "",
         tone: "Professional"
       });
-      setGeneratedDescription("");
+      setGeneratedVersions([]);
+      setSelectedVersion(0);
       setAnalysis(null);
     }
   }, [product, isOpen]);
 
-  useEffect(() => {
-    if (generatedDescription) {
+useEffect(() => {
+    if (generatedVersions.length > 0 && generatedVersions[selectedVersion]) {
       analyzeDescription();
     }
-  }, [generatedDescription]);
+  }, [generatedVersions, selectedVersion]);
 
-  const analyzeDescription = async () => {
+const analyzeDescription = async () => {
     try {
-      const result = await aiService.analyzeDescription(generatedDescription);
+      const currentDescription = generatedVersions[selectedVersion]?.content || "";
+      const result = await aiService.analyzeDescription(currentDescription);
       setAnalysis(result);
     } catch (error) {
       console.error("Analysis failed:", error);
@@ -66,7 +68,7 @@ const DescriptionGeneratorModal = ({
     }));
   };
 
-  const handleGenerate = async () => {
+const handleGenerate = async () => {
     if (!formData.productName.trim()) {
       toast.error("Please enter a product name");
       return;
@@ -82,51 +84,56 @@ const DescriptionGeneratorModal = ({
       const result = await aiService.generateDescription({
         productName: formData.productName,
         features: formData.features,
-        tone: formData.tone
+        tone: formData.tone,
+        variations: 3
       });
       
-      setGeneratedDescription(result.content);
-      toast.success("Description generated successfully!");
+      setGeneratedVersions(result.variations || [result]);
+      setSelectedVersion(0);
+      toast.success("3 description versions generated successfully!");
     } catch (error) {
-      toast.error("Failed to generate description. Please try again.");
+      toast.error("Failed to generate descriptions. Please try again.");
       console.error("Generation failed:", error);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleRegenerateVersion = async () => {
-    if (!generatedDescription) return;
+const handleRegenerateVersion = async () => {
+    if (generatedVersions.length === 0) return;
     
     setIsGenerating(true);
     try {
       const result = await aiService.generateDescription({
         productName: formData.productName,
         features: formData.features,
-        tone: formData.tone
+        tone: formData.tone,
+        variations: 3
       });
       
-      setGeneratedDescription(result.content);
-      toast.success("New version generated!");
+      setGeneratedVersions(result.variations || [result]);
+      setSelectedVersion(0);
+      toast.success("New versions generated!");
     } catch (error) {
-      toast.error("Failed to generate new version. Please try again.");
+      toast.error("Failed to generate new versions. Please try again.");
       console.error("Regeneration failed:", error);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleSaveToShopify = async () => {
-    if (!generatedDescription.trim()) {
+const handleSaveToShopify = async () => {
+    if (generatedVersions.length === 0 || !generatedVersions[selectedVersion]?.content.trim()) {
       toast.error("No description to save");
       return;
     }
 
+    const selectedDescription = generatedVersions[selectedVersion].content;
     setIsSaving(true);
     try {
-      await productService.updateDescription(product.Id, generatedDescription);
-      toast.success("Description saved to Shopify successfully!");
-      onSave && onSave(generatedDescription);
+      await productService.updateDescription(product.Id, selectedDescription);
+      toast.success(`Version ${String.fromCharCode(65 + selectedVersion)} saved to Shopify successfully!`);
+      onSave && onSave(selectedDescription);
       onClose();
     } catch (error) {
       toast.error("Failed to save to Shopify. Please try again.");
@@ -136,8 +143,15 @@ const DescriptionGeneratorModal = ({
     }
   };
 
-  const handleDescriptionChange = (value) => {
-    setGeneratedDescription(value);
+const handleDescriptionChange = (value) => {
+    if (generatedVersions[selectedVersion]) {
+      const updatedVersions = [...generatedVersions];
+      updatedVersions[selectedVersion] = {
+        ...updatedVersions[selectedVersion],
+        content: value
+      };
+      setGeneratedVersions(updatedVersions);
+    }
   };
 
   if (!isOpen) return null;
@@ -216,65 +230,92 @@ const DescriptionGeneratorModal = ({
                 </Button>
               </div>
 
-              {/* Right Column - Preview */}
+{/* Right Column - Preview */}
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Generated Description
+                    Generated Descriptions - A/B Testing
                   </label>
                   
                   {isGenerating ? (
                     <div className="border border-gray-300 rounded-lg p-6">
-                      <Loading type="generation" message="Crafting your perfect description..." />
+                      <Loading type="generation" message="Crafting 3 perfect description variations..." />
+                    </div>
+                  ) : generatedVersions.length > 0 ? (
+                    <div className="space-y-4">
+                      {/* Tab Navigation */}
+                      <div className="flex border-b border-gray-200">
+                        {generatedVersions.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedVersion(index)}
+                            className={cn(
+                              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+                              selectedVersion === index
+                                ? "border-purple-600 text-purple-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            )}
+                          >
+                            Version {String.fromCharCode(65 + index)}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Selected Version Content */}
+                      <div className="space-y-4">
+                        <TextArea
+                          value={generatedVersions[selectedVersion]?.content || ""}
+                          onChange={(e) => handleDescriptionChange(e.target.value)}
+                          placeholder="Generated description will appear here..."
+                          rows={8}
+                          className="font-mono text-sm"
+                        />
+                        
+                        {analysis && (
+                          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                            <h4 className="font-medium text-gray-900">
+                              Analysis - Version {String.fromCharCode(65 + selectedVersion)}
+                            </h4>
+                            <div className="grid grid-cols-3 gap-4 text-sm">
+                              <div className="text-center">
+                                <div className="font-medium text-gray-900">{analysis.wordCount}</div>
+                                <div className="text-gray-500">Words</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="font-medium text-gray-900">{analysis.readabilityScore}</div>
+                                <div className="text-gray-500">Readability</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="font-medium text-gray-900">{analysis.seoScore}</div>
+                                <div className="text-gray-500">SEO Score</div>
+                              </div>
+                            </div>
+                            
+                            {analysis.suggestions && analysis.suggestions.length > 0 && (
+                              <div className="border-t border-gray-200 pt-3">
+                                <div className="text-xs font-medium text-gray-700 mb-1">Suggestions:</div>
+                                <ul className="text-xs text-gray-600 space-y-1">
+                                  {analysis.suggestions.map((suggestion, index) => (
+                                    <li key={index} className="flex items-start">
+                                      <ApperIcon name="ArrowRight" className="w-3 h-3 mt-0.5 mr-1 text-gray-400" />
+                                      {suggestion}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <TextArea
-                        value={generatedDescription}
-                        onChange={(e) => handleDescriptionChange(e.target.value)}
-                        placeholder="Generated description will appear here..."
-                        rows={8}
-                        className="font-mono text-sm"
-                      />
-                      
-                      {analysis && (
-                        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                          <h4 className="font-medium text-gray-900">Analysis</h4>
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div className="text-center">
-                              <div className="font-medium text-gray-900">{analysis.wordCount}</div>
-                              <div className="text-gray-500">Words</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-medium text-gray-900">{analysis.readabilityScore}</div>
-                              <div className="text-gray-500">Readability</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-medium text-gray-900">{analysis.seoScore}</div>
-                              <div className="text-gray-500">SEO Score</div>
-                            </div>
-                          </div>
-                          
-                          {analysis.suggestions && analysis.suggestions.length > 0 && (
-                            <div className="border-t border-gray-200 pt-3">
-                              <div className="text-xs font-medium text-gray-700 mb-1">Suggestions:</div>
-                              <ul className="text-xs text-gray-600 space-y-1">
-                                {analysis.suggestions.map((suggestion, index) => (
-                                  <li key={index} className="flex items-start">
-                                    <ApperIcon name="ArrowRight" className="w-3 h-3 mt-0.5 mr-1 text-gray-400" />
-                                    {suggestion}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                    <div className="border border-gray-300 rounded-lg p-6 text-center text-gray-500">
+                      Generated descriptions will appear here...
                     </div>
                   )}
                 </div>
 
-                {generatedDescription && !isGenerating && (
+                {generatedVersions.length > 0 && !isGenerating && (
                   <div className="flex space-x-3">
                     <Button
                       onClick={handleRegenerateVersion}
@@ -283,7 +324,7 @@ const DescriptionGeneratorModal = ({
                       className="flex-1"
                       leftIcon="RefreshCw"
                     >
-                      Generate New Version
+                      Generate New Versions
                     </Button>
                     <Button
                       onClick={handleSaveToShopify}
@@ -293,7 +334,7 @@ const DescriptionGeneratorModal = ({
                       loading={isSaving}
                       leftIcon="Save"
                     >
-                      Save to Shopify
+                      Save Version {String.fromCharCode(65 + selectedVersion)}
                     </Button>
                   </div>
                 )}
