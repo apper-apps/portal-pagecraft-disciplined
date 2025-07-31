@@ -58,9 +58,21 @@ class ProductService {
     );
   }
 
-  getCategories() {
+getCategories() {
     const categories = [...new Set(this.products.map(p => p.category))];
     return ["All", ...categories.sort()];
+  }
+
+  async bulkUpdateDescriptions(updates) {
+    await delay(500);
+    updates.forEach(update => {
+      const product = this.products.find(p => p.Id === update.productId);
+      if (product) {
+        product.currentDescription = update.description;
+        product.lastGenerated = new Date().toISOString();
+      }
+    });
+    return { success: true, updated: updates.length };
   }
 }
 

@@ -6,12 +6,14 @@ import FilterBar from "@/components/molecules/FilterBar";
 import SearchBar from "@/components/molecules/SearchBar";
 import ProductGrid from "@/components/organisms/ProductGrid";
 import DescriptionGeneratorModal from "@/components/organisms/DescriptionGeneratorModal";
+import BulkGenerationModal from "@/components/organisms/BulkGenerationModal";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Button from "@/components/atoms/Button";
+
 const ProductsPage = () => {
-  const [products, setProducts] = useState([]);
+const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,7 +26,10 @@ const ProductsPage = () => {
   // Modal state
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  
+  // Bulk selection state
+  const [selectedProducts, setSelectedProducts] = useState(new Set());
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   useEffect(() => {
     loadProducts();
   }, []);
@@ -121,7 +126,7 @@ const ProductsPage = () => {
     setSelectedProduct(null);
   };
 
-  const handleDescriptionSave = (description) => {
+const handleDescriptionSave = (description) => {
     // Update the product in the local state
     setProducts(prev => prev.map(product => 
       product.Id === selectedProduct.Id 
@@ -129,6 +134,61 @@ const ProductsPage = () => {
         : product
     ));
     toast.success("Description saved successfully!");
+  };
+
+  // Bulk selection handlers
+  const handleProductSelect = (productId, isSelected) => {
+    setSelectedProducts(prev => {
+      const newSet = new Set(prev);
+      if (isSelected) {
+        newSet.add(productId);
+      } else {
+        newSet.delete(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProducts.size === filteredProducts.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(filteredProducts.map(p => p.Id)));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedProducts(new Set());
+  };
+
+  const handleBulkGenerate = () => {
+    if (selectedProducts.size === 0) {
+      toast.error("Please select products to generate descriptions for");
+      return;
+    }
+    setIsBulkModalOpen(true);
+  };
+
+  const handleBulkModalClose = () => {
+    setIsBulkModalOpen(false);
+  };
+
+  const handleBulkSave = (results) => {
+    // Update products with bulk generated descriptions
+    setProducts(prev => prev.map(product => {
+      const result = results.find(r => r.productId === product.Id);
+      if (result && result.description) {
+        return {
+          ...product,
+          currentDescription: result.description,
+          lastGenerated: new Date().toISOString()
+        };
+      }
+      return product;
+    }));
+    
+    setSelectedProducts(new Set());
+    toast.success(`Bulk descriptions saved for ${results.filter(r => r.description).length} products!`);
   };
 
   if (loading) {
@@ -199,8 +259,7 @@ const ProductsPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Search and Filters */}
+{/* Search and Filters */}
       <div className="space-y-4">
         <SearchBar
           onSearch={handleSearch}
@@ -218,6 +277,33 @@ const ProductsPage = () => {
           onViewModeChange={handleViewModeChange}
           onClearFilters={handleClearFilters}
         />
+
+        {/* Bulk Actions Bar */}
+        {selectedProducts.size > 0 && (
+          <div className="bg-white rounded-lg p-4 shadow-sm border border-purple-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium text-gray-700">
+                  {selectedProducts.size} product{selectedProducts.size !== 1 ? 's' : ''} selected
+                </span>
+                <button
+                  onClick={handleClearSelection}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Clear selection
+                </button>
+              </div>
+              <Button
+                onClick={handleBulkGenerate}
+                variant="primary"
+                size="sm"
+                leftIcon="Sparkles"
+              >
+                Bulk Generate
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Products Grid/List */}
@@ -235,10 +321,14 @@ const ProductsPage = () => {
           }
         />
       ) : (
-        <ProductGrid
+<ProductGrid
           products={filteredProducts}
           onGenerateDescription={handleGenerateDescription}
           viewMode={viewMode}
+          selectedProducts={selectedProducts}
+          onProductSelect={handleProductSelect}
+          onSelectAll={handleSelectAll}
+          showCheckboxes={true}
         />
       )}
 
@@ -249,6 +339,15 @@ const ProductsPage = () => {
         onClose={handleModalClose}
         onSave={handleDescriptionSave}
       />
+{/* Bulk Generation Modal */}
+      {isBulkModalOpen && (
+        <BulkGenerationModal
+          products={filteredProducts.filter(p => selectedProducts.has(p.Id))}
+          isOpen={isBulkModalOpen}
+          onClose={handleBulkModalClose}
+          onSave={handleBulkSave}
+        />
+      )}
     </div>
   );
 };

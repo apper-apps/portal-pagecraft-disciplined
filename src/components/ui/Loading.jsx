@@ -1,5 +1,26 @@
 import ApperIcon from "@/components/ApperIcon";
 
+const ProgressBar = ({ current, total, message }) => {
+  const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+  
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-gray-600">{message}</span>
+        <span className="font-medium text-gray-900">{current}/{total}</span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+      <div className="text-center">
+        <span className="text-lg font-semibold text-purple-600">{percentage}%</span>
+      </div>
+    </div>
+  );
+};
 const Loading = ({ type = "default", message = "Loading..." }) => {
   if (type === "skeleton") {
     return (
@@ -63,6 +84,13 @@ const Loading = ({ type = "default", message = "Loading..." }) => {
       </div>
     );
   }
+if (type === "progress") {
+    return (
+      <div className="p-6">
+        <ProgressBar current={current || 0} total={total || 100} message={message} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center p-8">
@@ -74,4 +102,5 @@ const Loading = ({ type = "default", message = "Loading..." }) => {
   );
 };
 
+export { ProgressBar };
 export default Loading;

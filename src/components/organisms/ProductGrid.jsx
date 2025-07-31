@@ -2,13 +2,47 @@ import ProductCard from "@/components/molecules/ProductCard";
 import React from "react";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
-const ProductGrid = ({ products, onGenerateDescription, viewMode = "grid" }) => {
+const ProductGrid = ({ 
+  products, 
+  onGenerateDescription, 
+  viewMode = "grid",
+  selectedProducts = new Set(),
+  onProductSelect,
+  onSelectAll,
+  showCheckboxes = false 
+}) => {
   if (viewMode === "list") {
-    return (
+return (
       <div className="space-y-4">
+        {/* List Header with Select All */}
+        {showCheckboxes && products.length > 0 && (
+          <div className="bg-gray-50 rounded-lg p-4 flex items-center space-x-3">
+            <input
+              type="checkbox"
+              checked={selectedProducts.size === products.length && products.length > 0}
+              onChange={onSelectAll}
+              className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Select All ({products.length} products)
+            </span>
+          </div>
+        )}
+        
         {products.map((product) => (
           <div key={product.Id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-6">
             <div className="flex items-center space-x-6">
+              {showCheckboxes && (
+                <div className="flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={selectedProducts.has(product.Id)}
+                    onChange={(e) => onProductSelect(product.Id, e.target.checked)}
+                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  />
+                </div>
+              )}
+              
               <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                 <img
                   src={product.image}
@@ -64,14 +98,34 @@ const ProductGrid = ({ products, onGenerateDescription, viewMode = "grid" }) => 
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {products.map((product) => (
-        <ProductCard
-          key={product.Id}
-          product={product}
-          onGenerateDescription={onGenerateDescription}
-        />
-      ))}
+<div className="space-y-4">
+      {/* Grid Header with Select All */}
+      {showCheckboxes && products.length > 0 && (
+        <div className="bg-gray-50 rounded-lg p-4 flex items-center space-x-3">
+          <input
+            type="checkbox"
+            checked={selectedProducts.size === products.length && products.length > 0}
+            onChange={onSelectAll}
+            className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+          />
+          <span className="text-sm font-medium text-gray-700">
+            Select All ({products.length} products)
+          </span>
+        </div>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <ProductCard
+            key={product.Id}
+            product={product}
+            onGenerateDescription={onGenerateDescription}
+            showCheckbox={showCheckboxes}
+            isSelected={selectedProducts.has(product.Id)}
+            onSelect={(isSelected) => onProductSelect(product.Id, isSelected)}
+          />
+        ))}
+      </div>
     </div>
   );
 };
