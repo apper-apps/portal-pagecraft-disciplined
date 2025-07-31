@@ -337,7 +337,6 @@ const getCharacterCountColor = (current, optimal) => {
                           rows={8}
                           className="font-mono text-sm"
                         />
-                        
 {analysis && (
                           <div className="bg-gray-50 rounded-lg p-4 space-y-4">
                             <div className="flex items-center justify-between">
@@ -404,12 +403,10 @@ const getCharacterCountColor = (current, optimal) => {
                                     <div className="text-xs text-gray-500">Conversion</div>
                                   </div>
                                 </div>
-</div>
+                              </div>
                             )}
-                          </div>
-                        )}
                             
-                        {analysis && analysis.suggestions && analysis.suggestions.length > 0 && (
+                            {analysis && analysis.suggestions && analysis.suggestions.length > 0 && (
                               <div className="border-t border-gray-200 pt-3">
                                 <div className="text-xs font-medium text-gray-700 mb-1">Suggestions:</div>
                                 <ul className="text-xs text-gray-600 space-y-1">
@@ -423,8 +420,7 @@ const getCharacterCountColor = (current, optimal) => {
                               </div>
                             )}
                           </div>
-)}
-                        
+                        )}
                         {/* SEO Section */}
                         {generatedVersions.length > 0 && (
                           <div className="border-t border-gray-200 pt-6 mt-6">
