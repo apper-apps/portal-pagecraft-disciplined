@@ -7,7 +7,7 @@ class TemplateService {
     this.templates = [...templatesData];
   }
 
-  async getAll() {
+async getAll() {
     await delay(300);
     return [...this.templates];
   }
@@ -21,7 +21,7 @@ class TemplateService {
     return { ...template };
   }
 
-  async create(templateData) {
+async create(templateData) {
     await delay(400);
     const maxId = Math.max(...this.templates.map(t => t.Id), 0);
     const newTemplate = {
@@ -51,7 +51,7 @@ class TemplateService {
   }
 
   async delete(id) {
-    await delay(300);
+    await delay(400);
     const index = this.templates.findIndex(t => t.Id === parseInt(id));
     if (index === -1) {
       throw new Error(`Template with Id ${id} not found`);
@@ -59,6 +59,21 @@ class TemplateService {
     
     this.templates.splice(index, 1);
     return true;
+  }
+
+  async getByIndustry(industry) {
+    await delay(300);
+    return this.templates.filter(t => t.industry === industry).map(t => ({ ...t }));
+  }
+
+  async getByPageType(pageType) {
+    await delay(300);
+    return this.templates.filter(t => t.pageType === pageType).map(t => ({ ...t }));
+  }
+
+  async getByIndustryAndPageType(industry, pageType) {
+    await delay(300);
+    return this.templates.filter(t => t.industry === industry && t.pageType === pageType).map(t => ({ ...t }));
   }
 
   async getByTone(tone) {
@@ -70,14 +85,19 @@ class TemplateService {
     );
   }
 
-  getTones() {
+getTones() {
     const tones = [...new Set(this.templates.map(t => t.tone))];
     return ["All", ...tones.sort()];
   }
 
-  getCategories() {
-    const categories = [...new Set(this.templates.map(t => t.category))];
-    return ["All", ...categories.sort()];
+  getIndustries() {
+    const industries = [...new Set(this.templates.map(t => t.industry))];
+    return ["All", ...industries.sort()];
+  }
+
+  getPageTypes() {
+    const pageTypes = [...new Set(this.templates.map(t => t.pageType))];
+    return ["All", ...pageTypes.sort()];
   }
 }
 

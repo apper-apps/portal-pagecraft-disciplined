@@ -13,34 +13,46 @@ import { formatDistanceToNow } from "date-fns";
 import templateService from "@/services/api/templateService";
 
 const TemplatesPage = () => {
-  const [templates, setTemplates] = useState([]);
+const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedIndustry, setSelectedIndustry] = useState("All");
+  const [selectedPageType, setSelectedPageType] = useState("All");
 
   const [formData, setFormData] = useState({
     name: "",
     tone: "Professional",
-    category: "General",
+    industry: "Fashion",
+    pageType: "Product Page",
     structure: "",
     keywords: "",
     description: ""
   });
 
   const toneOptions = ["Professional", "Casual", "Luxury"];
-  const categoryOptions = ["General", "Technology", "Fashion", "Lifestyle", "Luxury"];
-
-  useEffect(() => {
+  const industryOptions = ["Fashion", "Electronics", "Home & Garden", "Beauty"];
+  const pageTypeOptions = ["Product Page", "Landing Page", "Collection Page"];
+useEffect(() => {
     loadTemplates();
-  }, []);
+  }, [selectedIndustry, selectedPageType]);
 
   const loadTemplates = async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await templateService.getAll();
+      let data;
+      if (selectedIndustry === "All" && selectedPageType === "All") {
+        data = await templateService.getAll();
+      } else if (selectedIndustry !== "All" && selectedPageType === "All") {
+        data = await templateService.getByIndustry(selectedIndustry);
+      } else if (selectedIndustry === "All" && selectedPageType !== "All") {
+        data = await templateService.getByPageType(selectedPageType);
+      } else {
+        data = await templateService.getByIndustryAndPageType(selectedIndustry, selectedPageType);
+      }
       setTemplates(data);
     } catch (err) {
       setError(err.message);
@@ -57,8 +69,10 @@ const TemplatesPage = () => {
       category: "General",
       structure: "",
       keywords: "",
-      description: ""
+description: ""
     });
+    setSelectedIndustry("All");
+    setSelectedPageType("All");
     setSelectedTemplate(null);
     setIsEditMode(false);
     setIsCreateModalOpen(true);
@@ -69,8 +83,10 @@ const TemplatesPage = () => {
       name: template.name,
       tone: template.tone,
       category: template.category,
-      structure: template.structure,
+structure: template.structure,
       keywords: Array.isArray(template.keywords) ? template.keywords.join(", ") : template.keywords,
+      industry: template.industry,
+      pageType: template.pageType,
       description: template.description
     });
     setSelectedTemplate(template);
@@ -103,7 +119,7 @@ const TemplatesPage = () => {
 
     try {
       const templateData = {
-        ...formData,
+...formData,
         keywords: formData.keywords.split(",").map(k => k.trim()).filter(k => k.length > 0)
       };
 
@@ -221,6 +237,46 @@ const TemplatesPage = () => {
           </div>
         </div>
       </div>
+{/* Industry and Page Type Filters */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Industry
+              </label>
+              <select
+                value={selectedIndustry}
+                onChange={(e) => setSelectedIndustry(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="All">All Industries</option>
+                {industryOptions.map(industry => (
+                  <option key={industry} value={industry}>{industry}</option>
+                ))}
+              </select>
+            </div>
+            <div className="min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Page Type
+              </label>
+              <select
+                value={selectedPageType}
+                onChange={(e) => setSelectedPageType(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="All">All Page Types</option>
+                {pageTypeOptions.map(pageType => (
+                  <option key={pageType} value={pageType}>{pageType}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="text-sm text-gray-500">
+            {templates.length} template{templates.length !== 1 ? 's' : ''} found
+          </div>
+        </div>
+      </div>
 
       {/* Templates Grid */}
       {templates.length === 0 ? (
@@ -244,13 +300,16 @@ const TemplatesPage = () => {
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 mb-2">
                     {template.name}
-                  </h3>
-                  <div className="flex items-center space-x-2 mb-2">
+</h3>
+                  <div className="flex items-center flex-wrap gap-2 mb-2">
                     <Badge variant={getToneBadgeVariant(template.tone)} size="sm">
                       {template.tone}
                     </Badge>
-                    <Badge variant="default" size="sm">
-                      {template.category}
+                    <Badge variant="secondary" size="sm">
+                      {template.industry}
+                    </Badge>
+                    <Badge variant="outline" size="sm">
+                      {template.pageType}
                     </Badge>
                   </div>
                 </div>
@@ -339,14 +398,21 @@ const TemplatesPage = () => {
                     value={formData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
                     placeholder="Enter template name"
-                    required
+required
                   />
                   
                   <Select
-                    label="Category"
-                    value={formData.category}
-                    onChange={(e) => handleInputChange("category", e.target.value)}
-                    options={categoryOptions}
+                    label="Industry"
+                    value={formData.industry}
+                    onChange={(e) => handleInputChange("industry", e.target.value)}
+                    options={industryOptions}
+                  />
+
+                  <Select
+                    label="Page Type"
+                    value={formData.pageType}
+                    onChange={(e) => handleInputChange("pageType", e.target.value)}
+                    options={pageTypeOptions}
                   />
                 </div>
 
