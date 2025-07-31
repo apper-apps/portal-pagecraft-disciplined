@@ -100,8 +100,9 @@ async generateDescription({ productName, features, tone, templateId = null, vari
             seo: seoMetadata
           };
 
-          this.generatedDescriptions.push(newDescription);
+this.generatedDescriptions.push(newDescription);
           generatedVariations.push(newDescription);
+        }
         
         return {
           variations: generatedVariations,
