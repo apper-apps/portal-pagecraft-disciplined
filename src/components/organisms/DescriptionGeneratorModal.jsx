@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import Button from "@/components/atoms/Button";
-import Input from "@/components/atoms/Input";
-import Select from "@/components/atoms/Select";
-import TextArea from "@/components/atoms/TextArea";
-import Loading from "@/components/ui/Loading";
-import ApperIcon from "@/components/ApperIcon";
-import { cn } from "@/utils/cn";
 import aiService from "@/services/api/aiService";
 import productService from "@/services/api/productService";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import Input from "@/components/atoms/Input";
+import TextArea from "@/components/atoms/TextArea";
+import Button from "@/components/atoms/Button";
+import Select from "@/components/atoms/Select";
+import { cn } from "@/utils/cn";
 
 const DescriptionGeneratorModal = ({ 
   product, 
@@ -25,7 +25,8 @@ const [generatedVersions, setGeneratedVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
+const [analysis, setAnalysis] = useState(null);
+  const [qualityScore, setQualityScore] = useState(null);
   const [seoData, setSeoData] = useState({
     metaTitle: "",
     metaDescription: "",
@@ -46,7 +47,8 @@ useEffect(() => {
       });
 setGeneratedVersions([]);
       setSelectedVersion(0);
-      setAnalysis(null);
+setAnalysis(null);
+      setQualityScore(null);
       setSeoData({
         metaTitle: "",
         metaDescription: "",
@@ -201,11 +203,23 @@ const handleDescriptionChange = (value) => {
     }
   };
 
-  const getCharacterCountColor = (current, optimal) => {
+const getCharacterCountColor = (current, optimal) => {
     const percentage = current / optimal;
     if (percentage >= 0.8 && percentage <= 1.2) return "text-green-600";
     if (percentage >= 0.6 && percentage <= 1.4) return "text-yellow-600";
     return "text-red-600";
+  };
+
+  const getQualityColor = (score) => {
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const getQualityBadgeColor = (score) => {
+    if (score >= 80) return "bg-green-100 text-green-800";
+    if (score >= 60) return "bg-yellow-100 text-yellow-800";
+    return "bg-red-100 text-red-800";
   };
   if (!isOpen) return null;
 
@@ -324,27 +338,78 @@ const handleDescriptionChange = (value) => {
                           className="font-mono text-sm"
                         />
                         
-                        {analysis && (
-                          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                            <h4 className="font-medium text-gray-900">
-                              Analysis - Version {String.fromCharCode(65 + selectedVersion)}
-                            </h4>
-                            <div className="grid grid-cols-3 gap-4 text-sm">
+{analysis && (
+                          <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium text-gray-900">
+                                Quality Analysis - Version {String.fromCharCode(65 + selectedVersion)}
+                              </h4>
+                              {analysis.qualityScores && (
+                                <div className={`px-3 py-1 rounded-full text-sm font-medium ${getQualityBadgeColor(analysis.qualityScores.overall)}`}>
+                                  Overall: {analysis.qualityScores.overall}/100
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Content Metrics */}
+                            <div className="grid grid-cols-4 gap-4 text-sm">
                               <div className="text-center">
                                 <div className="font-medium text-gray-900">{analysis.wordCount}</div>
                                 <div className="text-gray-500">Words</div>
                               </div>
                               <div className="text-center">
-                                <div className="font-medium text-gray-900">{analysis.readabilityScore}</div>
-                                <div className="text-gray-500">Readability</div>
+                                <div className="font-medium text-gray-900">{analysis.sentenceCount}</div>
+                                <div className="text-gray-500">Sentences</div>
                               </div>
                               <div className="text-center">
-                                <div className="font-medium text-gray-900">{analysis.seoScore}</div>
-                                <div className="text-gray-500">SEO Score</div>
+                                <div className="font-medium text-gray-900">{analysis.avgWordsPerSentence}</div>
+                                <div className="text-gray-500">Avg/Sentence</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="font-medium text-gray-900">{analysis.characterCount}</div>
+                                <div className="text-gray-500">Characters</div>
                               </div>
                             </div>
+
+                            {/* Quality Scores */}
+                            {analysis.qualityScores && (
+                              <div className="border-t border-gray-200 pt-4">
+                                <h5 className="text-sm font-medium text-gray-700 mb-3">Quality Indicators</h5>
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div className="text-center">
+                                    <div className="flex items-center justify-center mb-1">
+                                      <ApperIcon name="BookOpen" className="w-4 h-4 mr-1 text-gray-400" />
+                                      <span className={`font-semibold ${getQualityColor(analysis.qualityScores.readability)}`}>
+                                        {analysis.qualityScores.readability}
+                                      </span>
+                                    </div>
+                                    <div className="text-xs text-gray-500">Readability</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="flex items-center justify-center mb-1">
+                                      <ApperIcon name="Search" className="w-4 h-4 mr-1 text-gray-400" />
+                                      <span className={`font-semibold ${getQualityColor(analysis.qualityScores.seo)}`}>
+                                        {analysis.qualityScores.seo}
+                                      </span>
+                                    </div>
+                                    <div className="text-xs text-gray-500">SEO Score</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="flex items-center justify-center mb-1">
+                                      <ApperIcon name="TrendingUp" className="w-4 h-4 mr-1 text-gray-400" />
+                                      <span className={`font-semibold ${getQualityColor(analysis.qualityScores.conversion)}`}>
+                                        {analysis.qualityScores.conversion}
+                                      </span>
+                                    </div>
+                                    <div className="text-xs text-gray-500">Conversion</div>
+                                  </div>
+                                </div>
+</div>
+                            )}
+                          </div>
+                        )}
                             
-                            {analysis.suggestions && analysis.suggestions.length > 0 && (
+                        {analysis && analysis.suggestions && analysis.suggestions.length > 0 && (
                               <div className="border-t border-gray-200 pt-3">
                                 <div className="text-xs font-medium text-gray-700 mb-1">Suggestions:</div>
                                 <ul className="text-xs text-gray-600 space-y-1">
@@ -447,13 +512,14 @@ const handleDescriptionChange = (value) => {
                 </div>
 
                 {generatedVersions.length > 0 && !isGenerating && (
-                  <div className="flex space-x-3">
+<div className="flex space-x-3">
                     <Button
                       onClick={handleRegenerateVersion}
                       variant="outline"
                       size="md"
                       className="flex-1"
                       leftIcon="RefreshCw"
+                      title="Generate new versions with quality feedback incorporated"
                     >
                       Generate New Versions
                     </Button>

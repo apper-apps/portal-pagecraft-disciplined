@@ -195,26 +195,163 @@ wordCount: generatedContent.split(" ").length,
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 
-  async analyzeDescription(content) {
+async analyzeDescription(content) {
     await delay(500);
     
     const wordCount = content.split(" ").length;
     const characterCount = content.length;
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
+    const avgWordsPerSentence = sentences > 0 ? wordCount / sentences : 0;
+    
+    // Enhanced quality scoring
+    const readabilityScore = this.calculateReadabilityScore(content, wordCount, sentences, avgWordsPerSentence);
+    const seoScore = this.calculateSEOScore(content, wordCount);
+    const conversionScore = this.calculateConversionScore(content);
+    
+    const overallQuality = Math.round((readabilityScore + seoScore + conversionScore) / 3);
     
     return {
       wordCount,
       characterCount,
       sentenceCount: sentences,
-      readabilityScore: Math.floor(Math.random() * 40) + 60, // 60-100
-      seoScore: Math.floor(Math.random() * 30) + 70, // 70-100
-      suggestions: [
-        wordCount < 50 ? "Consider adding more detail" : null,
-        wordCount > 150 ? "Consider shortening for better readability" : null,
-        sentences < 3 ? "Add more sentences for better flow" : null
-      ].filter(Boolean)
+      avgWordsPerSentence: Math.round(avgWordsPerSentence * 10) / 10,
+      qualityScores: {
+        readability: readabilityScore,
+        seo: seoScore,
+        conversion: conversionScore,
+        overall: overallQuality
+      },
+      suggestions: this.generateQualitySuggestions(content, wordCount, sentences, readabilityScore, seoScore, conversionScore)
     };
-}
+  }
+
+  calculateReadabilityScore(content, wordCount, sentences, avgWordsPerSentence) {
+    let score = 85; // Base score
+    
+    // Penalize very long or very short content
+    if (wordCount < 30) score -= 15;
+    else if (wordCount > 200) score -= 10;
+    
+    // Penalize long sentences
+    if (avgWordsPerSentence > 25) score -= 15;
+    else if (avgWordsPerSentence > 20) score -= 8;
+    
+    // Reward good sentence variety
+    if (sentences >= 3 && sentences <= 8) score += 5;
+    
+    // Check for complex words (simple heuristic)
+    const complexWords = content.match(/\b\w{10,}\b/g) || [];
+    if (complexWords.length / wordCount > 0.15) score -= 10;
+    
+    return Math.max(0, Math.min(100, score + Math.floor(Math.random() * 10) - 5));
+  }
+
+  calculateSEOScore(content, wordCount) {
+    let score = 75; // Base score
+    
+    // Check for keyword density and variety
+    const words = content.toLowerCase().split(/\s+/);
+    const uniqueWords = new Set(words);
+    const keywordDensity = uniqueWords.size / wordCount;
+    
+    if (keywordDensity > 0.7) score += 15;
+    else if (keywordDensity > 0.5) score += 8;
+    
+    // Reward optimal length
+    if (wordCount >= 50 && wordCount <= 150) score += 10;
+    
+    // Check for action words and benefits
+    const actionWords = ['enhance', 'improve', 'deliver', 'provide', 'ensure', 'achieve'];
+    const actionWordCount = actionWords.filter(word => 
+      content.toLowerCase().includes(word)
+    ).length;
+    
+    if (actionWordCount >= 2) score += 5;
+    
+    return Math.max(0, Math.min(100, score + Math.floor(Math.random() * 15) - 7));
+  }
+
+  calculateConversionScore(content) {
+    let score = 70; // Base score
+    
+    // Check for persuasive elements
+    const persuasiveWords = ['premium', 'exclusive', 'limited', 'guarantee', 'proven', 'innovative', 'award-winning'];
+    const benefitWords = ['save', 'improve', 'enhance', 'boost', 'increase', 'reduce', 'perfect'];
+    const urgencyWords = ['now', 'today', 'immediately', 'instant', 'quick', 'fast'];
+    
+    const persuasiveCount = persuasiveWords.filter(word => 
+      content.toLowerCase().includes(word)
+    ).length;
+    
+    const benefitCount = benefitWords.filter(word => 
+      content.toLowerCase().includes(word)
+    ).length;
+    
+    const urgencyCount = urgencyWords.filter(word => 
+      content.toLowerCase().includes(word)
+    ).length;
+    
+    // Reward persuasive language
+    score += persuasiveCount * 3;
+    score += benefitCount * 4;
+    score += urgencyCount * 2;
+    
+    // Check for social proof indicators
+    if (content.match(/\b(customers?|users?|people)\b.*\b(love|trust|choose|prefer)\b/i)) {
+      score += 8;
+    }
+    
+    // Reward clear value proposition
+    if (content.match(/\b(because|since|so that|to help|designed to)\b/i)) {
+      score += 5;
+    }
+    
+    return Math.max(0, Math.min(100, score + Math.floor(Math.random() * 10) - 5));
+  }
+
+  generateQualitySuggestions(content, wordCount, sentences, readabilityScore, seoScore, conversionScore) {
+    const suggestions = [];
+    
+    // Readability suggestions
+    if (readabilityScore < 70) {
+      if (wordCount < 30) {
+        suggestions.push("Add more detail to improve content depth and readability");
+      }
+      if (sentences < 3) {
+        suggestions.push("Break content into more sentences for better flow");
+      }
+      const avgWordsPerSentence = wordCount / sentences;
+      if (avgWordsPerSentence > 20) {
+        suggestions.push("Shorten sentences to improve readability (aim for 15-20 words per sentence)");
+      }
+    }
+    
+    // SEO suggestions
+    if (seoScore < 75) {
+      suggestions.push("Include more relevant keywords naturally throughout the description");
+      if (wordCount < 50) {
+        suggestions.push("Expand content to 50-150 words for better SEO value");
+      }
+      suggestions.push("Add specific product benefits and features for better search visibility");
+    }
+    
+    // Conversion suggestions
+    if (conversionScore < 75) {
+      suggestions.push("Add persuasive words like 'premium', 'exclusive', or 'proven' to increase appeal");
+      suggestions.push("Include clear benefits that show value to the customer");
+      suggestions.push("Consider adding urgency or scarcity elements");
+      if (!content.match(/\b(because|since|so that|to help|designed to)\b/i)) {
+        suggestions.push("Explain why customers should choose this product");
+      }
+    }
+    
+    // Overall quality suggestions
+    if (Math.min(readabilityScore, seoScore, conversionScore) < 60) {
+      suggestions.push("Consider regenerating with focus on the lowest-scoring quality dimension");
+    }
+    
+    return suggestions;
+  }
 
   async generateSEOMetadata(productName, features, tone, description) {
     await delay(200);
