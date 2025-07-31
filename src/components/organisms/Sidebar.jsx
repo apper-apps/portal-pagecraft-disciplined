@@ -3,7 +3,7 @@ import ApperIcon from "@/components/ApperIcon";
 import { cn } from "@/utils/cn";
 
 const Sidebar = ({ isOpen = true, onToggle }) => {
-  const navigationItems = [
+const navigationItems = [
     {
       name: "Products",
       href: "/products",
@@ -15,6 +15,12 @@ const Sidebar = ({ isOpen = true, onToggle }) => {
       href: "/templates",
       icon: "FileText",
       description: "Description templates library"
+    },
+    {
+      name: "Marketing Pages",
+      href: "/marketing",
+      icon: "Megaphone",
+      description: "Generate marketing landing pages"
     },
     {
       name: "Settings",

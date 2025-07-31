@@ -8,7 +8,7 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
-  const getPageInfo = () => {
+const getPageInfo = () => {
     switch (location.pathname) {
       case "/":
       case "/products":
@@ -20,6 +20,11 @@ const Layout = () => {
         return {
           title: "Templates",
           subtitle: "Create and manage description templates"
+        };
+      case "/marketing":
+        return {
+          title: "Marketing Pages",
+          subtitle: "Generate compelling landing pages for your campaigns"
         };
       case "/settings":
         return {
